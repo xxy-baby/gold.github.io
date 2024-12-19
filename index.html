@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻宝游戏</title>
+</head>
+
+<body>
+    <div id="gameData">
+        <h2>游戏元素</h2>
+        <div id="library"></div>
+        <div id="temple"></div>
+        <div id="guardian"></div>
+    </div>
+    <div id="playerInfo">
+        <h2>玩家信息</h2>
+    </div>
+    <audio id="backgroundMusic" src="background-music.mp3" loop></audio>
+    <button id="startButton">开始游戏</button>
+    <div class="container">
+        <div class="scene" id="scene1">
+            <h1>在古老的图书馆里</h1>
+            <img src="cdf90070-e22a-47f8-af4d-1b952f4c8ebb.jpg" alt="图书馆" class="scene-img">
+            <p>你找到了第一个线索...</p>
+            <button id="continue1">继续</button>
+        </div>
+        <div class="scene" id="scene2" style="display:none;">
+            <h1>解码古代文字</h1>
+            <img src="b08cf081-7c1f-4e85-9387-741755157ed4.jpg" alt="古代文字" class="scene-img">
+            <p>宝藏在一座古老的神庙中...</p>
+            <button id="continue2">继续</button>
+        </div>
+        <div class="scene" id="scene3" style="display:none;">
+            <h1>搜索神庙</h1>
+            <img src="微信图片_20241105233004.jpg" alt="神庙" class="scene-img">
+            <p>有一个入口通往迷宫...</p>
+            <button id="continue3">继续</button>
+        </div>
+        <div class="scene" id="scene4" style="display:none;">
+            <h1>通过迷宫</h1>
+            <img src="微信图片_20241105232521.jpg" alt="迷宫" class="scene-img">
+            <p>发现几块拼图 </p>
+            <button id="continue4">继续</button>
+        </div>
+        <div class="scene" id="scene5" style="display:none;">
+            <h1>解开拼图</h1>
+            <img src="微信图片_20241105232354.jpg" alt="拼图" class="scene-img">
+            <p>揭示了一条秘密通道。</p>
+            <button id="continue5">继续</button>
+        </div>
+        <div class="scene" id="scene6" style="display:none;">
+            <h1>解锁秘密通道</h1>
+            <img src="微信图片_20241105232338.jpg" alt="秘密通道" class="scene-img">
+            <p>通道后藏在许多碎片</p>
+            <button id="continue6">继续</button>
+        </div>
+        <div class="scene" id="scene7" style="display:none;">
+            <h1>找到地图碎片</h1>
+            <img src="微信图片_20241105232359.jpg" alt="地图碎片" class="scene-img">
+            <p>碎片拼好，并指向一处陷阱</p>
+            <button id="continue7">继续</button>
+        </div>
+        <div class="scene" id="scene8" style="display:none;">
+            <h1>绕过陷阱</h1>
+            <img src="微信图片_20241105232344.jpg" alt="陷阱" class="scene-img">
+            <p>前方道路不太清晰</p>
+            <button id="continue8">继续</button>
+        </div>
+        <div class="scene" id="scene9" style="display:none;">
+            <h1>召唤鹰眼</h1>
+            <img src="微信图片_20241105232404.jpg" alt="鹰眼" class="scene-img">
+            <p>鹰眼召唤成功，可以更清晰地看到隐藏的路径，并发现宝藏</p>
+            <button id="continue9">继续</button>
+        </div>
+        <div class="scene" id="scene10" style="display:none;">
+            <h1>打开宝藏箱</h1>
+            <img src="微信图片_20241105232349.jpg" alt="宝藏" class="scene-img">
+            <p>恭喜!你找到了传说中的宝藏!</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 场景元素获取
+            const scenes = {
+                1: document.getElementById('scene1'),
+                2: document.getElementById('scene2'),
+                3: document.getElementById('scene3'),
+                4: document.getElementById('scene4'),
+                5: document.getElementById('scene5'),
+                6: document.getElementById('scene6'),
+                7: document.getElementById('scene7'),
+                8: document.getElementById('scene8'),
+                9: document.getElementById('scene9'),
+                10: document.getElementById('scene10')
+            };
+            // 特定场景文本元素获取
+            const textElements = {
+                6: document.getElementById('scene6Text'),
+                8: document.getElementById('scene8Text')
+            };
+            // 继续按钮元素获取
+            const buttons = {
+                1: document.getElementById('continue1'),
+                2: document.getElementById('continue2'),
+                3: document.getElementById('continue3'),
+                4: document.getElementById('continue4'),
+                5: document.getElementById('continue5'),
+                6: document.getElementById('continue6'),
+                7: document.getElementById('continue7'),
+                8: document.getElementById('continue8'),
+                9: document.getElementById('continue9')
+            };
+            let currentScene = 1;
+
+            // 显示指定场景，隐藏其他场景
+            function showScene(sceneNum) {
+                for (let key in scenes) {
+                    scenes[key].style.display = 'none';
+                }
+                scenes[sceneNum].style.display = 'block';
+                currentScene = sceneNum;
+            }
+
+            // 更新特定场景的文本内容
+            function updateTextElement(sceneNum, text) {
+                if (textElements[sceneNum]) {
+                    textElements[sceneNum].textContent = text;
+                }
+            }
+
+            // 延迟函数，用于等待动画等效果
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // 异步加载数据
+            async function loadData() {
+                try {
+                    const response = await fetch('game_data.txt');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch game data');
+                    }
+                    const gameData = await response.text();
+                    const gameDataLines = gameData.split('\n');
+                    const gameElements = {};
+                    gameDataLines.forEach(line => {
+                        const [key, value] = line.split(': ');
+                        gameElements[key] = value;
+                    });
+
+                    // 显示游戏数据
+                    Object.keys(gameElements).forEach(key => {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.textContent = gameElements[key];
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading game data:', error);
+                    // 可以在这里添加一个提示元素显示错误信息给用户
+                    const errorMessage = document.createElement('p');
+                    errorMessage.textContent = '无法加载游戏数据，请检查文件是否存在。';
+                    document.body.appendChild(errorMessage);
+                }
+            }
+
+            // 存储和恢复玩家信息
+            function savePlayerInfo() {
+                const playerId = 'player123';
+                const nickname = '冒险者';
+                const gameHistory = '图书馆 -> 神庙 -> 守卫';
+                localStorage.setItem('playerId', playerId);
+                localStorage.setItem('nickname', nickname);
+                localStorage.setItem('gameHistory', gameHistory);
+            }
+
+            function restorePlayerInfo() {
+                const playerId = localStorage.getItem('playerId');
+                const nickname = localStorage.getItem('nickname');
+                const gameHistory = localStorage.getItem('gameHistory');
+                if (playerId && nickname && gameHistory) {
+                    const playerInfoElement = document.getElementById('playerInfo');
+                    playerInfoElement.textContent = `Player ID: ${playerId}, Nickname:${nickname}, Game History: ${gameHistory}`;
+                } else {
+                    console.log('无法获取玩家信息，可能未存储或已被清除。');
+                }
+            }
+
+            // 添加背景音乐，等待用户交互后播放
+            function addBackgroundMusic() {
+                const music = new Audio('background-music.mp3');
+                music.loop = true;
+                const startButton = document.getElementById('startButton');
+                startButton.addEventListener('click', () => {
+                    music.play().catch((error) => {
+                        console.log('自动播放失败，可能被浏览器阻止。', error);
+                        // 提示用户手动点击播放
+                        const manualPlayPrompt = document.createElement('p');
+                        manualPlayPrompt.textContent = '背景音乐无法自动播放，请点击此处手动播放：';
+                        const manualPlayButton = document.createElement('button');
+                        manualPlayButton.textContent = '播放音乐';
+                        manualPlayButton.addEventListener('click', () => {
+                            music.play();
+                        });
+                        document.body.appendChild(manualPlayPrompt);
+                        document.body.appendChild(manualPlayButton);
+                    });
+                });
+            }
+
+            // 模拟搜索神庙逻辑，返回模拟结果（需完善具体模拟逻辑）
+            function simulateSearchTemple() {
+                return new Promise((resolve) => {
+                    // 这里简单模拟返回一个结果，实际需按需求完善逻辑
+                    const result = "模拟在神庙搜索到的相关信息";
+                    resolve(result);
+                });
+            }
+
+            // 模拟迷宫导航逻辑，返回模拟结果（需完善具体模拟逻辑）
+            function simulateNavigateThroughMaze() {
+                return new Promise((resolve) => {
+                    // 这里简单模拟返回一个结果，实际需按需求完善逻辑
+                    const result = "模拟在迷宫中导航得到的情况";
+                    resolve(result);
+                });
+            }
+
+            // 模拟解锁秘密通道逻辑，返回模拟结果（需完善具体模拟逻辑）
+            function simulateUnlockSecretPassage() {
+                return new Promise((resolve) => {
+                    // 这里简单模拟返回一个结果，实际需按需求完善逻辑
+                    const result = "模拟解锁秘密通道后的相关情况";
+                    resolve(result);
+                });
+            }
+
+            // 模拟绕过陷阱逻辑，返回模拟结果（需完善具体模拟逻辑）
+            function simulateOutsmartTraps() {
+                return new Promise((resolve) => {
+                    // 这里简单模拟返回一个结果，实际需按需求完善逻辑
+                    const result = "模拟绕过陷阱后的相关情况";
+                    resolve(result);
+                });
+            }
+
+            async function findTreasureWithAnimation() {
+                try {
+                    showScene(1);
+                    await delay(1500); // 等待动画效果
+                    buttons[1].addEventListener('click', () => { buttons[1].click(); }, { once: true }); // 自动触发继续按钮以进入下一场景
+                    function onButtonClick(sceneNum) {
+                        return new Promise(resolve => {
+                            buttons[sceneNum].addEventListener('click', () => {
+                                resolve();
+                            }, { once: true });
+                        });
+                    }
+                    await onButtonClick(1);
+                    showScene(2);
+                    const clue = "在古老的图书馆里找到了第一个线索...";
+                    updateTextElement(2, clue);
+                    await delay(1500);
+                    await onButtonClick(2);
+                    showScene(3);
+                    const location = "解码成功!宝藏在一座古老的神庙中...";
+                    updateTextElement(3, location);
+                    await delay(1500);
+                    await onButtonClick(3);
+                    showScene(4);
+                    // 模拟随机事件
+                    const searchTempleResult = await simulateSearchTemple();
+                    updateTextElement(4, searchTempleResult);
+                    await delay(1500);
+                    await onButtonClick(4);
+                    showScene(5);
+                    // 模拟迷宫导航
+                    const mazeResult = await simulateNavigateThroughMaze();
+                    updateTextElement(5, mazeResult);
+                    await delay(1500);
+                    await onButtonClick(5);
+                    showScene(6);
+                    const puzzleResult = "拼图解答成功，揭示了一条秘密通道。";
+                    updateTextElement(6, puzzleResult);
+                    await delay(1500);
+                    await onButtonClick(6);
+                    showScene(7);
+                    // 模拟解锁秘密通道
+                    const unlockResult = await simulateUnlockSecretPassage();
+                    updateTextElement(7, unlockResult); // 虽然这里没有文本更新，但保持结构一致
+                    await delay(1500);
+                    await onButtonClick(7);
+                    showScene(8);
+                    // 模拟绕过陷阱
+                    const trapsResult = await simulateOutsmartTraps();
+                    updateTextElement(8, trapsResult);
+                    await delay(1500);
+                    await onButtonClick(8);
+                    showScene(9);
+                    await delay(1500);
+                    await onButtonClick(9);
+                    showScene(10);
+                    alert('寻宝过程结束！');
+                } catch (error) {
+                    console.error('发生错误:', error);
+                }
+            }
+
+            // 启动游戏，包含加载数据、存储恢复玩家信息、添加背景音乐等操作
+            function startGame() {
+                loadData();
+                savePlayerInfo();
+                restorePlayerInfo();
+                addBackgroundMusic();
+            }
+
+            startGame();
+
+            // 继续按钮的响应逻辑，使其点击后切换到下一个场景
+            const continueButtons = document.querySelectorAll('.scene button');
+            continueButtons.forEach((button, index) => {
+                console.log('绑定按钮事件：', button.id);
+                button.addEventListener('click', () => {
+                    // 隐藏当前场景
+                    const currentScene = button.parentElement;
+                    currentScene.style.display = 'none';
+
+                    // 计算下一个场景的索引
+                    const nextSceneIndex = index + 1;
+
+                    // 获取下一个场景元素
+                    const nextScene = document.getElementById(`scene${nextSceneIndex}`);
+
+                    // 检查是否存在下一个场景
+                    if (nextScene) {
+                        // 显示下一个场景
+                        nextScene.style.display = 'block';
+
+                        // 显示下一个场景中的所有图片
+                        const imgElements = nextScene.querySelectorAll('img');
+                        imgElements.forEach(img => {
+                            img.style.display = 'block'; // 确保图片是可见的
+                        });
+                    } else {
+                        // 如果没有下一个场景，可以添加一些结束游戏的逻辑，比如显示胜利信息或游戏结束页面
+                        alert('游戏结束！');
+                    }
+                });
+            });
+
+            // 启动寻宝动画
+            findTreasureWithAnimation();
+        });
+    </script>
+</body>
+
+</html>
